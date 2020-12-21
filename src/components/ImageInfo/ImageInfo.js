@@ -31,7 +31,6 @@ class ImageInfo extends Component {
     if (prevName !== nextName || prevPage !== nextPage) {
       this.setState({ status: 'pending' });
 
-      setTimeout(() => {
         fetchImage(nextName, nextPage)
           .then(newImages => {
             if (newImages.total !== 0) {
@@ -45,7 +44,6 @@ class ImageInfo extends Component {
             return Promise.reject(new Error('Invalid request'));
           })
           .catch(error => this.setState({ error, status: 'rejected' }));
-      }, 2000);
     }
   };
 

@@ -4,14 +4,14 @@ import PropTypes from 'prop-types';
 
 class Button extends Component {
     scroll = () => {
-    this.props.onClick();
-    setTimeout(() => {
-        window.scrollTo({
-            top: document.documentElement.scrollHeight,
-            behavior: 'smooth',
-        });
-    }, 1000)
-};
+        this.props.onClick();
+        setTimeout(() => {
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth',
+            });
+        }, 500);
+    };
    
     render() {
         return (
@@ -24,6 +24,7 @@ class Button extends Component {
 
 Button.propTypes = {
     onClick: PropTypes.func.isRequired,
+    page: PropTypes.number.isRequired,
 }
 
 export default Button;
