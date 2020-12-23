@@ -1,50 +1,81 @@
-import { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import fetchImage from '../services/image-api';
 import ImagesErrorView from '../ImageErrorView';
 import ImageLoader from '../Loader';
 import ImageGallery from '../ImageGallery';
+import Modal from '../Modal';
 import Button from '../Button';
+import Searchbar from '../Searchbar';
 
 class ImageInfo extends Component {
   state = {
     images: [],
-    error: null,
-    status: 'idle',
+    totalHits: 0,
+    searchQuery: '',
     page: 1,
+    isLoading: false,
+    error: null,
+    notify: false,
+    message: '',
+    showPopup: false,
+    showButton: false,
+    targetImage: null,
   };
 
-  static propTypes = {
-    imageName: PropTypes.string.isRequired,
+  componentDidMount() {
+    this.searchImages();
   };
 
   componentDidUpdate(prevProps, prevState) {
-    const prevName = prevProps.imageName;
-    const nextName = this.props.imageName;
-    const prevPage = prevState.page;
-    const nextPage = this.state.page;
+    const { searchQuery, page } = this.state;
 
-    if (prevName !== nextName) {
+    if (prevState.searchQuery !== searchQuery) {
+      this.searchImages(searchQuery, 1);
       this.setState({ page: 1 });
     }
-
-    if (prevName !== nextName || prevPage !== nextPage) {
-      this.setState({ status: 'pending' });
-
-        fetchImage(nextName, nextPage)
-          .then(newImages => {
-            if (newImages.total !== 0) {
-              this.setState(prevState => ({
-                images: [...prevState.images, ...newImages.hits],
-                status: 'resolved',
-              }));
-              return;
-            }
-
-            return Promise.reject(new Error('Invalid request'));
-          })
-          .catch(error => this.setState({ error, status: 'rejected' }));
+    if (prevState.page !== page) {
+      this.searchImages(searchQuery, page);
     }
+  };
+   searchImages(searchQuery = '', page = 1) {
+    if (searchQuery !== '') {
+      this.setState({
+        isLoading: true,
+        notify: false,
+      });
+
+      fetchImage(searchQuery, page)
+        .then(newImage => {
+          if (page === 1) {
+            this.setState({
+              totalHits: newImage.totalHits,
+              images: newImage.hits,
+            });
+          } else {
+            this.setState(prevState => ({
+              images: [...prevState.images, ...newImage.hits],
+            }));
+            window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: 'smooth',
+            });
+          }
+          this.checkLoadMore();
+        })
+        .catch(error => this.setState({ error }))
+        .finally(() => this.setState({ isLoading: false }));
+    } else {
+      this.setState({
+        images: [],
+        showButton: false,
+        message: 'Please input search request',
+        notify: true,
+      });
+    }
+  };
+
+  onSubmit = value => {
+    this.setState({ searchQuery: value });
   };
 
   onClickLoadMore = () => {
@@ -53,29 +84,72 @@ class ImageInfo extends Component {
     }));
   };
 
+  checkLoadMore = () => {
+    const { totalHits, images } = this.state;
+
+    if (totalHits > images.length) {
+      this.setState({ showButton: true });
+    } else {
+      this.setState({ showButton: false });
+    }
+
+    if (!totalHits) {
+      this.setState({
+        message: 'Nothing was found. Try again.',
+        notify: true,
+      });
+    } else {
+      this.setState({ notify: false });
+    }
+  };
+
+   toggleModal = ({ status, src, alt }) => {
+    if (status) {
+      this.setState({
+        targetImage: { src, alt },
+        showPopup: true,
+      });
+    } else {
+      this.setState({
+        targetImage: null,
+        showPopup: false,
+      });
+    }
+  };
+
   render() {
-    const { error, status } = this.state;
+    const {
+      images,
+      isLoading,
+      error,
+      notify,
+      message,
+      showPopup,
+      targetImage,
+      showButton,
+    } = this.state;
 
-    if (status === 'idle') {
-      return <p>Please enter the word</p>;
-    }
-
-    if (status === 'pending') {
-      return <ImageLoader />;
-    }
-
-    if (status === 'rejected') {
-      return <ImagesErrorView message={error.message} />;
-    }
-
-    if (status === 'resolved') {
-      return (
-        <>
-          <ImageGallery images={this.state.images} />
-          <Button onClick={this.onClickLoadMore} page={this.state.page} />
-        </>
-      );
-    }
+    return (
+      <>
+        <Searchbar onSubmit={this.onSubmit} />
+        {error && <ImagesErrorView message={error.message} />}
+        {isLoading && (
+          <ImageLoader />
+        )}
+        {images.length > 0 && (
+          <ImageGallery images={images} toggleModal={this.toggleModal} />
+        )}
+        {notify && <ImagesErrorView message={message} />}
+        {showPopup && (
+          <Modal
+            src={targetImage.src}
+            alt={targetImage.alt}
+            toggleModal={this.toggleModal}
+          />
+        )}
+        {showButton && <Button onClick={this.onClickLoadMore} />}
+      </>
+    );
   }
 }
 

@@ -1,30 +1,12 @@
-import { Component } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 
 
-class Button extends Component {
-    scroll = () => {
-        this.props.onClick();
-        setTimeout(() => {
-            window.scrollTo({
-                top: document.documentElement.scrollHeight,
-                behavior: 'smooth',
-            });
-        }, 500);
-    };
-   
-    render() {
+const Button = ({ onClick }) => {
         return (
-            <button type="button" className="Button" onClick={this.scroll}>
+            <button type="button" className="Button" onClick={onClick}>
                 Load More
             </button>
-        )
-    }
-}
-
-Button.propTypes = {
-    onClick: PropTypes.func.isRequired,
-    page: PropTypes.number.isRequired,
-}
+        );
+};
 
 export default Button;

@@ -9,8 +9,8 @@ class Searchbar extends Component {
         imageName: '',
     };
 
-    handleNameChange = event => {
-        this.setState({ imageName: event.currentTarget.value.toLowerCase() });
+    changeInput = evt => {
+        this.setState({ imageName: evt.target.value });
     };
 
     handleSubmit = event => {
@@ -34,7 +34,7 @@ class Searchbar extends Component {
                     </button>
                     <input
                         value={this.state.imageName}
-                        onChange={this.handleNameChange}
+                        onChange={this.changeInput}
                         className="SearchForm-input"
                         type="text"
                         autoComplete="off"
