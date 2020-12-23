@@ -103,11 +103,11 @@ class ImageInfo extends Component {
     }
   };
 
-   toggleModal = ({ status, src, alt }) => {
+  toggleModal = ({ status, src, alt }) => {
     if (status) {
       this.setState({
         targetImage: { src, alt },
-Modal: true,
+        showModal: true,
       });
     } else {
       this.setState({
