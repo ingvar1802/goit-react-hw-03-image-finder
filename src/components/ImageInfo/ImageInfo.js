@@ -17,8 +17,8 @@ class ImageInfo extends Component {
     error: null,
     notify: false,
     message: '',
-    showPopup: false,
-    showButton: false,
+    showModal: false,
+    activeButton: false,
     targetImage: null,
   };
 
@@ -67,7 +67,7 @@ class ImageInfo extends Component {
     } else {
       this.setState({
         images: [],
-        showButton: false,
+        activeButton: false,
         message: 'Please input search request',
         notify: true,
       });
@@ -88,9 +88,9 @@ class ImageInfo extends Component {
     const { totalHits, images } = this.state;
 
     if (totalHits > images.length) {
-      this.setState({ showButton: true });
+      this.setState({ activeButton: true });
     } else {
-      this.setState({ showButton: false });
+      this.setState({ activeButton: false });
     }
 
     if (!totalHits) {
@@ -107,12 +107,12 @@ class ImageInfo extends Component {
     if (status) {
       this.setState({
         targetImage: { src, alt },
-        showPopup: true,
+Modal: true,
       });
     } else {
       this.setState({
         targetImage: null,
-        showPopup: false,
+        showModal: false,
       });
     }
   };
@@ -124,9 +124,9 @@ class ImageInfo extends Component {
       error,
       notify,
       message,
-      showPopup,
+      showModal,
       targetImage,
-      showButton,
+      activeButton,
     } = this.state;
 
     return (
@@ -140,14 +140,14 @@ class ImageInfo extends Component {
           <ImageGallery images={images} toggleModal={this.toggleModal} />
         )}
         {notify && <ImagesErrorView message={message} />}
-        {showPopup && (
+        {showModal && (
           <Modal
             src={targetImage.src}
             alt={targetImage.alt}
             toggleModal={this.toggleModal}
           />
         )}
-        {showButton && <Button onClick={this.onClickLoadMore} />}
+        {activeButton && <Button onClick={this.onClickLoadMore} />}
       </>
     );
   }
